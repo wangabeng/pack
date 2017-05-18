@@ -1,0 +1,61 @@
+项目用到的技术：
+vue2 vuex vue-router
+项目的架构参照了该网站：
+https://segmentfault.com/a/1190000006864281
+实现方式和逻辑过程独自完成，跳了一个又一个坑，收获满满。具体的遇到的坑在项目代码注释里有注解。这里总结几点：
+
+1 for循环嵌套中i值的问题 用let可以轻松解决，es6的结构方法解决下文遇到的第2个问题------ES6的用武之地在这个项目中得以体现，要深入学习ES6.
+
+2 绑定img的src属性，可以直接在引号内使用data的数据，例如：
+<img :src="value.src"><!--指令的值是不需要加{{}}-->
+
+3 绑定style属性的时候可以直接使用数据，但是不可以用复合属性。例如：<li v-for='value in getText' :style="{background:value.bg,backgroundSize:'100%',backgroundRepeat:'no-repeat',backgroundColor:'#ffffff'}">
+
+4 backgroundSize:'100%'可以使图片自动适应所在父级元素的宽高，而不需要ps修改图片宽高了。
+
+5 大坑 大坑 router-link在 HTML5 history 模式下，才会阻止点击事件， @click.native可以解决 
+<li><router-link  @click.native='toggleBar' to='/bonus'>2017精选</router-link></li>
+					<!--大坑 大坑 -->
+6 用v-if配合路由的路径判断或组件名称判断 可以解决多页面及历史记录问题。
+v-if="$route.path!=='/bonus'
+
+等价于：
+v-if="!$route.path.match('/bonus') "
+
+等价于：
+v-if="$route.name!=='Bonus' "//name必须要定义 
+
+v-if="$route.component!=='Bonus'"//这样写无效 因为Bonus是个ES6的写法
+所以 只能用name和path来判断
+
+7 打包的时候，如果不成功，重新生成vue-cli文件，然后把原来的src等目录下的文件拷贝过去。另外注意，在vue init的时候 有webpack 和webpack-simple两种模式 不要弄错了
+遇到npm run dev/build出现 npm error code elifecycle 错误提示的时候 一般是端口号被占用 在config文件里修改index.js里的8080端口为任何一个新的端口号 如8082即可。
+webpack模式可以正常用npm run build打包生成dist静态文件，而webpack-simple模式则不生成html静态文件（解决办法是拷贝配置文件），所以以后做项目用webpack模式。
+
+8 vue-cli项目完成的时候 用npm run build生成静态文件 index.html和static文件夹 。今天2017年5月17日 尝试了很久都不成功，原因有：
+	 一 引用CSS文件的或JS 图片等地址不对
+解决办法包括三步：
+一 解决background背景图片不显示的问题：把组件的样式放到style.css样式表里
+二 解决组件<template>内的img的路径问题：暂时这样理解，组件最终在index.html内渲染，所以想象设置组件的图片路径就是设置index.html内img的src路径，并且使用
+相对路径。
+三 打包的时候设置config文件夹内index.js的assetsPublicPath: '/'为assetsPublicPath: './',就是设置成相对路径。测试的时候就需要改回assetsPublicPath: '/'
+
+ 未 完待续------
+
+项目遇到的问题：
+1 路由跳转是通过点击事件触发，点击事件同时触发data数据的改变，比如data数据的show值本来为true，通过点击事件show值变为false。点击后页面由A页面跳转到新的页面B，此时，如果点击浏览器的上一步按钮，就会回到原始页面A，但是data的数据show值还是false，并没有变回true。如何解决此问题？
+参见http://yaohuitao.com/?p=335     https://segmentfault.com/q/1010000009136709
+解决方案：用v-if配合route的路径判断 即可完美解决。既然如此，用vue也可以做模拟多页面的应用了。
+v-if="$route.path!=='/bonus'
+
+2 mapActions如果同时向写自己的methods，如何写？
+参见：http://www.cnblogs.com/gsgs/p/6738249.html
+用es6解构的方法：
+例如const {c}=mapActions(['c']) 解析：mapActions(['c'])生成一个对象{函数名称'c'}，c可以在此组件中直接使用的。用解构方法const {c}=mapActions(['c']) 相当于c(const {c}此处的c就不是个对象了)就是对象{函数名称'c'}内的'c'。详细见代码App.vue文件。
+
+
+3 当store内容过多的时候，目前的store结构管理起来不够清晰。针对每个组件有可以设置各自的store模块，有待进一步研究.
+
+4 响应式布局是短板，需要在1-2工作日内完成攻克。
+
+5 部分功能尚未完善，如页面登录和注册。动画未添加。
